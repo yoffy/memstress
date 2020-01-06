@@ -14,6 +14,12 @@ This is a memory stressing tool. Used with commands such as `perf` and `time`.
 $ make
 ```
 
+or
+
+```
+$ CXXFLAGS="-march=native" make
+```
+
 ## Usage
 
 ```

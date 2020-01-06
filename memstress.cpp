@@ -1,3 +1,6 @@
+#if defined(__SSE2__) || defined(__AVX2__)
+	#include <x86intrin.h>
+#endif
 #if defined(__ARM_NEON)
 	#include <arm_neon.h>
 #endif
@@ -15,6 +18,7 @@ enum
 	kMethodGet4,
 	kMethodGet8,
 	kMethodGet16,
+	kMethodGet32,
 
 	// set
 	kMethodMemset,
@@ -22,6 +26,7 @@ enum
 	kMethodSet4,
 	kMethodSet8,
 	kMethodSet16,
+	kMethodSet32,
 
 	// reverse
 	kMethodStdReverse,
@@ -29,6 +34,7 @@ enum
 	kMethodReverse4,
 	kMethodReverse8,
 	kMethodReverse16,
+	kMethodReverse32,
 
 	kMethodEnd
 };
@@ -43,7 +49,7 @@ template<int N>
 struct Method : public IMethod
 {
 	const char* name() const override { return nullptr; }
-	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override { return 0; }
+	uint8_t exec(volatile uint8_t*, uint8_t, size_t) const override { return 0; }
 };
 
 template<> struct Method<kMethodGet1> : public IMethod
@@ -106,6 +112,34 @@ template<> struct Method<kMethodGet8> : public IMethod
 	}
 };
 
+#if defined(__SSE2__)
+template<> struct Method<kMethodGet16> : public IMethod
+{
+	const char* name() const override { return "get16"; }
+
+	__attribute__((noinline))
+	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
+	{
+		__m128i w = _mm_setzero_si128();
+		for ( size_t i = 0; i < size; i += sizeof(w) ) {
+			w ^= _mm_loadu_si128((const __m128i*)(&p[i]));
+		}
+
+		uint64_t x = _mm_cvtsi128_si64(w) ^ _mm_cvtsi128_si64(_mm_unpackhi_epi64(w, w));
+		v = v
+			^ ( x        & 0xFF)
+			^ ((x >>  8) & 0xFF)
+			^ ((x >> 16) & 0xFF)
+			^ ((x >> 24) & 0xFF)
+			^ ((x >> 32) & 0xFF)
+			^ ((x >> 40) & 0xFF)
+			^ ((x >> 48) & 0xFF)
+			^ ((x >> 56) & 0xFF);
+		return v;
+	}
+};
+#endif
+
 #if defined(__ARM_NEON)
 template<> struct Method<kMethodGet16> : public IMethod
 {
@@ -120,6 +154,35 @@ template<> struct Method<kMethodGet16> : public IMethod
 		}
 
 		uint64_t x = vgetq_lane_u64(vreinterpretq_u64_u8(w), 0) ^ vgetq_lane_u64(vreinterpretq_u64_u8(w), 1);
+		v = v
+			^ ( x        & 0xFF)
+			^ ((x >>  8) & 0xFF)
+			^ ((x >> 16) & 0xFF)
+			^ ((x >> 24) & 0xFF)
+			^ ((x >> 32) & 0xFF)
+			^ ((x >> 40) & 0xFF)
+			^ ((x >> 48) & 0xFF)
+			^ ((x >> 56) & 0xFF);
+		return v;
+	}
+};
+#endif
+
+#if defined(__AVX2__)
+template<> struct Method<kMethodGet32> : public IMethod
+{
+	const char* name() const override { return "get32"; }
+
+	__attribute__((noinline))
+	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
+	{
+		__m256i w = _mm256_setzero_si256();
+		for ( size_t i = 0; i < size; i += sizeof(w) ) {
+			w ^= _mm256_load_si256((const __m256i*)(&p[i]));
+		}
+
+		__m128i w128 = _mm256_castsi256_si128(w) ^ _mm256_extracti128_si256(w, 1);
+		uint64_t x = _mm_cvtsi128_si64(w128) ^ _mm_cvtsi128_si64(_mm_unpackhi_epi64(w128, w128));
 		v = v
 			^ ( x        & 0xFF)
 			^ ((x >>  8) & 0xFF)
@@ -190,6 +253,23 @@ template<> struct Method<kMethodSet8> : public IMethod
 	}
 };
 
+#if defined(__SSE2__)
+template<> struct Method<kMethodSet16> : public IMethod
+{
+	const char* name() const override { return "set16"; }
+
+	__attribute__((noinline))
+	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
+	{
+		__m128i w = _mm_set1_epi8(v);
+		for ( size_t i = 0; i < size; i += sizeof(w) ) {
+			_mm_storeu_si128((__m128i*)(&p[i]), w);
+		}
+		return v;
+	}
+};
+#endif
+
 #if defined(__ARM_NEON)
 template<> struct Method<kMethodSet16> : public IMethod
 {
@@ -201,6 +281,23 @@ template<> struct Method<kMethodSet16> : public IMethod
 		uint8x16_t w = vdupq_n_u8(v);
 		for ( size_t i = 0; i < size; i += sizeof(w) ) {
 			vst1q_u8(const_cast<uint8_t*>(&p[i]), w);
+		}
+		return v;
+	}
+};
+#endif
+
+#if defined(__AVX2__)
+template<> struct Method<kMethodSet32> : public IMethod
+{
+	const char* name() const override { return "set32"; }
+
+	__attribute__((noinline))
+	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
+	{
+		__m256i w = _mm256_set1_epi8(v);
+		for ( size_t i = 0; i < size; i += sizeof(w) ) {
+			_mm256_storeu_si256((__m256i*)(&p[i]), w);
 		}
 		return v;
 	}
@@ -295,6 +392,33 @@ private:
 	}
 };
 
+#if defined(__SSSE3__)
+template<> struct Method<kMethodReverse16> : public IMethod
+{
+	const char* name() const override { return "reverse16"; }
+
+	__attribute__((noinline))
+	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
+	{
+		for ( size_t i = 0; i < size/2; i += sizeof(__m128i) ) {
+			size_t j = size - sizeof(__m128i) - i;
+			__m128i tmp1 = _mm_loadu_si128((const __m128i*)(&p[i]));
+			__m128i tmp2 = _mm_loadu_si128((const __m128i*)(&p[j]));
+			_mm_storeu_si128((__m128i*)(&p[i]), byterev(tmp2));
+			_mm_storeu_si128((__m128i*)(&p[j]), byterev(tmp1));
+		}
+		return v;
+	}
+
+private:
+	static __m128i byterev(__m128i v)
+	{
+		__m128i table = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+		return _mm_shuffle_epi8(v, table);
+	}
+};
+#endif
+
 #if defined(__ARM_NEON)
 template<> struct Method<kMethodReverse16> : public IMethod
 {
@@ -324,21 +448,59 @@ private:
 };
 #endif
 
+#if defined(__AVX2__)
+template<> struct Method<kMethodReverse32> : public IMethod
+{
+	const char* name() const override { return "reverse32"; }
+
+	__attribute__((noinline))
+	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
+	{
+		for ( size_t i = 0; i < size/2; i += sizeof(__m256i) ) {
+			size_t j = size - sizeof(__m256i) - i;
+			__m256i tmp1 = _mm256_load_si256((const __m256i*)(&p[i]));
+			__m256i tmp2 = _mm256_load_si256((const __m256i*)(&p[j]));
+			_mm256_storeu_si256((__m256i*)(&p[i]), byterev(tmp2));
+			_mm256_storeu_si256((__m256i*)(&p[j]), byterev(tmp1));
+		}
+		return v;
+	}
+
+private:
+	static __m256i byterev(__m256i v)
+	{
+		__m256i table = _mm256_set_epi8(
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+		);
+		// 32 10 -> 23 01
+		__m256i rev128 = _mm256_shuffle_epi8(v, table);
+		// 23 01 -> 01 23
+		__m128i lo = _mm256_castsi256_si128(rev128);
+		__m128i hi = _mm256_extracti128_si256(rev128, 1);
+		return _mm256_inserti128_si256(_mm256_castsi128_si256(hi), lo, 1);
+	}
+};
+#endif
+
 static IMethod *g_Methods[] = {
 	new Method<kMethodGet1>,
 	new Method<kMethodGet4>,
 	new Method<kMethodGet8>,
 	new Method<kMethodGet16>,
+	new Method<kMethodGet32>,
 	new Method<kMethodMemset>,
 	new Method<kMethodSet1>,
 	new Method<kMethodSet4>,
 	new Method<kMethodSet8>,
 	new Method<kMethodSet16>,
+	new Method<kMethodSet32>,
 	new Method<kMethodStdReverse>,
 	new Method<kMethodReverse1>,
 	new Method<kMethodReverse4>,
 	new Method<kMethodReverse8>,
 	new Method<kMethodReverse16>,
+	new Method<kMethodReverse32>,
 };
 
 static const size_t kAlignment = 4096;
