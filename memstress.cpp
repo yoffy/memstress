@@ -402,8 +402,10 @@ int main(int argc, char* argv[])
 	IMethod* method = nullptr;
 	int numMethods = sizeof(g_Methods) / sizeof(*g_Methods);
 	for ( int i = 0; i < numMethods; i++ ) {
-		if ( std::strcmp(g_Methods[i]->name(), cstrMethod) == 0 ) {
-			method = g_Methods[i];
+		if ( const char* name = g_Methods[i]->name() ) {
+			if ( std::strcmp(name, cstrMethod) == 0 ) {
+				method = g_Methods[i];
+			}
 		}
 	}
 	if ( ! method ) {
