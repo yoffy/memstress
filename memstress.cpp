@@ -14,28 +14,28 @@
 
 enum
 {
-	// get
-	kMethodGet1,
-	kMethodGet4,
-	kMethodGet8,
-	kMethodGet16,
-	kMethodGet32,
+	// read
+	kMethodRead1,
+	kMethodRead4,
+	kMethodRead8,
+	kMethodRead16,
+	kMethodRead32,
 
-	// set
-	kMethodMemset,
-	kMethodSet1,
-	kMethodSet4,
-	kMethodSet8,
-	kMethodSet16,
-	kMethodSet32,
+	// write
+	kMethodStdMemset,
+	kMethodWrite1,
+	kMethodWrite4,
+	kMethodWrite8,
+	kMethodWrite16,
+	kMethodWrite32,
 
-	// reverse
+	// readwrite
 	kMethodStdReverse,
-	kMethodReverse1,
-	kMethodReverse4,
-	kMethodReverse8,
-	kMethodReverse16,
-	kMethodReverse32,
+	kMethodReadWrite1,
+	kMethodReadWrite4,
+	kMethodReadWrite8,
+	kMethodReadWrite16,
+	kMethodReadWrite32,
 
 	kMethodEnd
 };
@@ -53,9 +53,9 @@ struct Method : public IMethod
 	uint8_t exec(volatile uint8_t*, uint8_t, size_t) const override { return 0; }
 };
 
-template<> struct Method<kMethodGet1> : public IMethod
+template<> struct Method<kMethodRead1> : public IMethod
 {
-	const char* name() const override { return "get1"; }
+	const char* name() const override { return "read1"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -66,9 +66,9 @@ template<> struct Method<kMethodGet1> : public IMethod
 	}
 };
 
-template<> struct Method<kMethodGet4> : public IMethod
+template<> struct Method<kMethodRead4> : public IMethod
 {
-	const char* name() const override { return "get4"; }
+	const char* name() const override { return "read4"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -86,9 +86,9 @@ template<> struct Method<kMethodGet4> : public IMethod
 	}
 };
 
-template<> struct Method<kMethodGet8> : public IMethod
+template<> struct Method<kMethodRead8> : public IMethod
 {
-	const char* name() const override { return "get8"; }
+	const char* name() const override { return "read8"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -111,9 +111,9 @@ template<> struct Method<kMethodGet8> : public IMethod
 };
 
 #if defined(__SSE2__)
-template<> struct Method<kMethodGet16> : public IMethod
+template<> struct Method<kMethodRead16> : public IMethod
 {
-	const char* name() const override { return "get16"; }
+	const char* name() const override { return "read16"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -138,9 +138,9 @@ template<> struct Method<kMethodGet16> : public IMethod
 #endif
 
 #if defined(__ARM_NEON)
-template<> struct Method<kMethodGet16> : public IMethod
+template<> struct Method<kMethodRead16> : public IMethod
 {
-	const char* name() const override { return "get16"; }
+	const char* name() const override { return "read16"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -165,9 +165,9 @@ template<> struct Method<kMethodGet16> : public IMethod
 #endif
 
 #if defined(__AVX2__)
-template<> struct Method<kMethodGet32> : public IMethod
+template<> struct Method<kMethodRead32> : public IMethod
 {
-	const char* name() const override { return "get32"; }
+	const char* name() const override { return "read32"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -192,9 +192,9 @@ template<> struct Method<kMethodGet32> : public IMethod
 };
 #endif
 
-template<> struct Method<kMethodMemset> : public IMethod
+template<> struct Method<kMethodStdMemset> : public IMethod
 {
-	const char* name() const override { return "memset"; }
+	const char* name() const override { return "std::memset"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -203,9 +203,9 @@ template<> struct Method<kMethodMemset> : public IMethod
 	}
 };
 
-template<> struct Method<kMethodSet1> : public IMethod
+template<> struct Method<kMethodWrite1> : public IMethod
 {
-	const char* name() const override { return "set1"; }
+	const char* name() const override { return "write1"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -216,9 +216,9 @@ template<> struct Method<kMethodSet1> : public IMethod
 	}
 };
 
-template<> struct Method<kMethodSet4> : public IMethod
+template<> struct Method<kMethodWrite4> : public IMethod
 {
-	const char* name() const override { return "set4"; }
+	const char* name() const override { return "write4"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -230,9 +230,9 @@ template<> struct Method<kMethodSet4> : public IMethod
 	}
 };
 
-template<> struct Method<kMethodSet8> : public IMethod
+template<> struct Method<kMethodWrite8> : public IMethod
 {
-	const char* name() const override { return "set8"; }
+	const char* name() const override { return "write8"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -245,9 +245,9 @@ template<> struct Method<kMethodSet8> : public IMethod
 };
 
 #if defined(__SSE2__)
-template<> struct Method<kMethodSet16> : public IMethod
+template<> struct Method<kMethodWrite16> : public IMethod
 {
-	const char* name() const override { return "set16"; }
+	const char* name() const override { return "write16"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -261,9 +261,9 @@ template<> struct Method<kMethodSet16> : public IMethod
 #endif
 
 #if defined(__ARM_NEON)
-template<> struct Method<kMethodSet16> : public IMethod
+template<> struct Method<kMethodWrite16> : public IMethod
 {
-	const char* name() const override { return "set16"; }
+	const char* name() const override { return "write16"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -277,9 +277,9 @@ template<> struct Method<kMethodSet16> : public IMethod
 #endif
 
 #if defined(__AVX2__)
-template<> struct Method<kMethodSet32> : public IMethod
+template<> struct Method<kMethodWrite32> : public IMethod
 {
-	const char* name() const override { return "set32"; }
+	const char* name() const override { return "write32"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -303,9 +303,9 @@ template<> struct Method<kMethodStdReverse> : public IMethod
 	}
 };
 
-template<> struct Method<kMethodReverse1> : public IMethod
+template<> struct Method<kMethodReadWrite1> : public IMethod
 {
-	const char* name() const override { return "reverse1"; }
+	const char* name() const override { return "readwrite1"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -320,9 +320,9 @@ template<> struct Method<kMethodReverse1> : public IMethod
 	}
 };
 
-template<> struct Method<kMethodReverse4> : public IMethod
+template<> struct Method<kMethodReadWrite4> : public IMethod
 {
-	const char* name() const override { return "reverse4"; }
+	const char* name() const override { return "readwrite4"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -346,9 +346,9 @@ private:
 	}
 };
 
-template<> struct Method<kMethodReverse8> : public IMethod
+template<> struct Method<kMethodReadWrite8> : public IMethod
 {
-	const char* name() const override { return "reverse8"; }
+	const char* name() const override { return "readwrite8"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -377,9 +377,9 @@ private:
 };
 
 #if defined(__SSSE3__)
-template<> struct Method<kMethodReverse16> : public IMethod
+template<> struct Method<kMethodReadWrite16> : public IMethod
 {
-	const char* name() const override { return "reverse16"; }
+	const char* name() const override { return "readwrite16"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -403,9 +403,9 @@ private:
 #endif
 
 #if defined(__ARM_NEON)
-template<> struct Method<kMethodReverse16> : public IMethod
+template<> struct Method<kMethodReadWrite16> : public IMethod
 {
-	const char* name() const override { return "reverse16"; }
+	const char* name() const override { return "readwrite16"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -431,9 +431,9 @@ private:
 #endif
 
 #if defined(__AVX2__)
-template<> struct Method<kMethodReverse32> : public IMethod
+template<> struct Method<kMethodReadWrite32> : public IMethod
 {
-	const char* name() const override { return "reverse32"; }
+	const char* name() const override { return "readwrite32"; }
 
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
@@ -465,23 +465,23 @@ private:
 #endif
 
 static IMethod *g_Methods[] = {
-	new Method<kMethodGet1>,
-	new Method<kMethodGet4>,
-	new Method<kMethodGet8>,
-	new Method<kMethodGet16>,
-	new Method<kMethodGet32>,
-	new Method<kMethodMemset>,
-	new Method<kMethodSet1>,
-	new Method<kMethodSet4>,
-	new Method<kMethodSet8>,
-	new Method<kMethodSet16>,
-	new Method<kMethodSet32>,
+	new Method<kMethodRead1>,
+	new Method<kMethodRead4>,
+	new Method<kMethodRead8>,
+	new Method<kMethodRead16>,
+	new Method<kMethodRead32>,
+	new Method<kMethodStdMemset>,
+	new Method<kMethodWrite1>,
+	new Method<kMethodWrite4>,
+	new Method<kMethodWrite8>,
+	new Method<kMethodWrite16>,
+	new Method<kMethodWrite32>,
 	new Method<kMethodStdReverse>,
-	new Method<kMethodReverse1>,
-	new Method<kMethodReverse4>,
-	new Method<kMethodReverse8>,
-	new Method<kMethodReverse16>,
-	new Method<kMethodReverse32>,
+	new Method<kMethodReadWrite1>,
+	new Method<kMethodReadWrite4>,
+	new Method<kMethodReadWrite8>,
+	new Method<kMethodReadWrite16>,
+	new Method<kMethodReadWrite32>,
 };
 
 static const size_t kAlignment = 4096;
@@ -511,7 +511,7 @@ static void Usage(const char* argv0)
 	std::printf("\tSize of memory allocation. (align up to %lu)\n", kAlignment);
 	std::printf("method\n");
 	std::printf("\tThere are kind of 3 type functions that memory read, memory write and memory read-write.\n");
-	std::printf("\tAnd, there are type of element widths. For example, get1 accesses 1-byte at a time.\n");
+	std::printf("\tAnd, there are type of element widths. For example, read1 accesses 1-byte at a time.\n");
 	std::printf("\tUse following methods:\n");
 	std::printf("\t\t");
 	int numMethods = sizeof(g_Methods) / sizeof(*g_Methods);

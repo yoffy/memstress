@@ -30,6 +30,6 @@ $ ./memstress
 
 Compare cache misses for 524288 x 16KB (8GB) and 2048 x 4MB (8GB) workloads.
 ```
-$ perf stat -ddd ./memstress $((2**19)) $(((2**4)*1024)) reverse8
-$ perf stat -ddd ./memstress $((2**11)) $(((2**12)*1024)) reverse8
+$ perf stat -ddd ./memstress $((2**19)) $(((2**4)*1024)) readwrite8
+$ perf stat -ddd ./memstress $((2**11)) $(((2**12)*1024)) readwrite8
 ```
