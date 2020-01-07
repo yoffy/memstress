@@ -5,10 +5,11 @@
 	#include <arm_neon.h>
 #endif
 #include <algorithm>
-#include <memory>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
+#include <random>
 #include <stdint.h>
 
 enum
@@ -56,7 +57,6 @@ template<> struct Method<kMethodGet1> : public IMethod
 {
 	const char* name() const override { return "get1"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		for ( size_t i = 0; i < size; i++ ) {
@@ -70,7 +70,6 @@ template<> struct Method<kMethodGet4> : public IMethod
 {
 	const char* name() const override { return "get4"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		uint32_t w = 0;
@@ -91,7 +90,6 @@ template<> struct Method<kMethodGet8> : public IMethod
 {
 	const char* name() const override { return "get8"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		uint64_t w = 0;
@@ -117,7 +115,6 @@ template<> struct Method<kMethodGet16> : public IMethod
 {
 	const char* name() const override { return "get16"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		__m128i w = _mm_setzero_si128();
@@ -145,7 +142,6 @@ template<> struct Method<kMethodGet16> : public IMethod
 {
 	const char* name() const override { return "get16"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		uint8x16_t w = vdupq_n_u8(0);
@@ -173,7 +169,6 @@ template<> struct Method<kMethodGet32> : public IMethod
 {
 	const char* name() const override { return "get32"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		__m256i w = _mm256_setzero_si256();
@@ -201,7 +196,6 @@ template<> struct Method<kMethodMemset> : public IMethod
 {
 	const char* name() const override { return "memset"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		std::memset(const_cast<uint8_t*>(p), v, size);
@@ -213,7 +207,6 @@ template<> struct Method<kMethodSet1> : public IMethod
 {
 	const char* name() const override { return "set1"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		for ( size_t i = 0; i < size; i++ ) {
@@ -227,7 +220,6 @@ template<> struct Method<kMethodSet4> : public IMethod
 {
 	const char* name() const override { return "set4"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		uint32_t w = v;
@@ -242,7 +234,6 @@ template<> struct Method<kMethodSet8> : public IMethod
 {
 	const char* name() const override { return "set8"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		uint64_t w = v;
@@ -258,7 +249,6 @@ template<> struct Method<kMethodSet16> : public IMethod
 {
 	const char* name() const override { return "set16"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		__m128i w = _mm_set1_epi8(v);
@@ -275,7 +265,6 @@ template<> struct Method<kMethodSet16> : public IMethod
 {
 	const char* name() const override { return "set16"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		uint8x16_t w = vdupq_n_u8(v);
@@ -292,7 +281,6 @@ template<> struct Method<kMethodSet32> : public IMethod
 {
 	const char* name() const override { return "set32"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		__m256i w = _mm256_set1_epi8(v);
@@ -308,7 +296,6 @@ template<> struct Method<kMethodStdReverse> : public IMethod
 {
 	const char* name() const override { return "std::reverse"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		std::reverse(p, &p[size - 1]);
@@ -320,7 +307,6 @@ template<> struct Method<kMethodReverse1> : public IMethod
 {
 	const char* name() const override { return "reverse1"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		for ( size_t i = 0; i < size/2; i++ ) {
@@ -338,7 +324,6 @@ template<> struct Method<kMethodReverse4> : public IMethod
 {
 	const char* name() const override { return "reverse4"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		for ( size_t i = 0; i < size/2; i += sizeof(uint32_t) ) {
@@ -365,7 +350,6 @@ template<> struct Method<kMethodReverse8> : public IMethod
 {
 	const char* name() const override { return "reverse8"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		for ( size_t i = 0; i < size/2; i += sizeof(uint64_t) ) {
@@ -397,7 +381,6 @@ template<> struct Method<kMethodReverse16> : public IMethod
 {
 	const char* name() const override { return "reverse16"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		for ( size_t i = 0; i < size/2; i += sizeof(__m128i) ) {
@@ -424,7 +407,6 @@ template<> struct Method<kMethodReverse16> : public IMethod
 {
 	const char* name() const override { return "reverse16"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		for ( size_t i = 0; i < size/2; i += sizeof(uint8x16_t) ) {
@@ -453,7 +435,6 @@ template<> struct Method<kMethodReverse32> : public IMethod
 {
 	const char* name() const override { return "reverse32"; }
 
-	__attribute__((noinline))
 	uint8_t exec(volatile uint8_t* p, uint8_t v, size_t size) const override
 	{
 		for ( size_t i = 0; i < size/2; i += sizeof(__m256i) ) {
@@ -505,21 +486,18 @@ static IMethod *g_Methods[] = {
 
 static const size_t kAlignment = 4096;
 
-static int Randomize(uint8_t* p, size_t size)
+static uint64_t Random()
 {
-	uint8_t random[kAlignment];
-	FILE* urandomFile = fopen("/dev/urandom", "rb");
-	size_t numRead = fread(random, 1, sizeof(random), urandomFile);
-	fclose(urandomFile);
-	if ( sizeof(random) != numRead ) {
-		std::printf("numRead: %lu\n", numRead);
-		return 1;
-	}
+	static uint64_t x = std::random_device()() | (1ULL << 63);
+	x = x ^ (x << 7);
+	return x = x ^ (x >> 9);
+}
 
-	for ( size_t i = 0, j = 0; i < size; i += kAlignment/2, j++ ) {
-		memcpy(&p[i], &random[j & (kAlignment-1)], kAlignment/2);
+static int Initialize(uint8_t* p, size_t size)
+{
+	for ( size_t i = 0; i < size; i += sizeof(uint64_t) ) {
+		*reinterpret_cast<uint64_t*>(&p[i]) = Random();
 	}
-
 	return 0;
 }
 
@@ -581,7 +559,7 @@ int main(int argc, char* argv[])
 
 	uint8_t* p = reinterpret_cast<uint8_t*>(malloc(size));
 
-	if ( int err = Randomize(p, size) ) {
+	if ( int err = Initialize(p, size) ) {
 		return err;
 	}
 
