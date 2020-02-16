@@ -506,7 +506,7 @@ static void Usage(const char* argv0)
 	std::printf("usage\n");
 	std::printf("\t%s cycles size method\n\n", argv0);
 	std::printf("cycles\n");
-	std::printf("\tNumber of times to scan memory.\n");
+	std::printf("\tNumber of times to scan memory. (0 is infinite)\n");
 	std::printf("size\n");
 	std::printf("\tSize of memory allocation. (align up to %lu)\n", kAlignment);
 	std::printf("method\n");
@@ -564,7 +564,7 @@ int main(int argc, char* argv[])
 	}
 
 	uint8_t v = uint8_t(numCycles);
-	for ( int i = 0; i < numCycles; i++ ) {
+	for ( int i = 0; ! numCycles || i < numCycles; i++ ) {
 		v = method->exec(p, v, size);
 	}
 	std::printf("result (dummy data): %d\n", v);
