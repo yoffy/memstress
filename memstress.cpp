@@ -173,7 +173,7 @@ template<> struct Method<kMethodRead32> : public IMethod
 	{
 		__m256i w = _mm256_setzero_si256();
 		for ( size_t i = 0; i < size; i += sizeof(w) ) {
-			w ^= _mm256_load_si256((const __m256i*)(&p[i]));
+			w ^= _mm256_loadu_si256((const __m256i*)(&p[i]));
 		}
 
 		__m128i w128 = _mm256_castsi256_si128(w) ^ _mm256_extracti128_si256(w, 1);
@@ -439,8 +439,8 @@ template<> struct Method<kMethodReadWrite32> : public IMethod
 	{
 		for ( size_t i = 0; i < size/2; i += sizeof(__m256i) ) {
 			size_t j = size - sizeof(__m256i) - i;
-			__m256i tmp1 = _mm256_load_si256((const __m256i*)(&p[i]));
-			__m256i tmp2 = _mm256_load_si256((const __m256i*)(&p[j]));
+			__m256i tmp1 = _mm256_loadu_si256((const __m256i*)(&p[i]));
+			__m256i tmp2 = _mm256_loadu_si256((const __m256i*)(&p[j]));
 			_mm256_storeu_si256((__m256i*)(&p[i]), byterev(tmp2));
 			_mm256_storeu_si256((__m256i*)(&p[j]), byterev(tmp1));
 		}
